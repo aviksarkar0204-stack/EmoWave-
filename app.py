@@ -69,15 +69,15 @@ def predict(audio_path, model_choice):
         with torch.no_grad():
             outputs = efficientnet(tensor)
             probs = torch.softmax(outputs, dim=1).squeeze().numpy()
-        top3_idx = probs.argsort()[-3:][::-1]
-        return {CLASSES[i]: float(probs[i]) for i in top3_idx}
+        top5_idx = probs.argsort()[-5:][::-1]
+        return {CLASSES[i]: float(probs[i]) for i in top5_idx}
 
     else:
         features = extract_features(y, sr).reshape(1, -1)
         features_scaled = scaler.transform(features)
         probs = svm.predict_proba(features_scaled)[0]
-        top3_idx = probs.argsort()[-3:][::-1]
-        return {le.classes_[i]: float(probs[i]) for i in top3_idx}
+        top5_idx = probs.argsort()[-5:][::-1]
+        return {le.classes_[i]: float(probs[i]) for i in top5_idx}
 
 
 demo = gr.Interface(
