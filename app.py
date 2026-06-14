@@ -30,7 +30,7 @@ def load_efficientnet():
         nn.Linear(1280, NUM_CLASSES)
     )
     model.load_state_dict(torch.load(
-        os.path.join(BASE_DIR, 'models', 'echonet_efficientnet1.pth'),
+        os.path.join(BASE_DIR, 'models', 'emowave_efficientnet1.pth'),
         map_location='cpu',
         weights_only=False
     ))
@@ -80,39 +80,19 @@ def predict(audio_path, model_choice):
         return {le.classes_[i]: float(probs[i]) for i in top3_idx}
 
 
-with gr.Blocks(theme=gr.themes.Soft()) as demo:
-    gr.Markdown("""
-    # 🎙️ EmoWave — Speech Emotion Classifier
-    ### Detect human emotions from voice recordings
-    Upload a `.wav` audio clip and EmoWave will analyse the emotion in the voice using ML and Deep Learning.
-    """)
+demo = gr.Interface(
+    fn=predict,
+    inputs=[
+        gr.Audio(type='filepath', label='Upload Audio Clip'),
+        gr.Dropdown(
+            choices=['EfficientNet (88.51%)', 'SVM (88.15%)'],
+            value='EfficientNet (88.51%)',
+            label='Choose Model'
+        )
+    ],
+    outputs=gr.Label(num_top_classes=3, label='Predicted Emotion'),
+    title='🎙️ EmoWave — Speech Emotion Classifier',
+    description='Upload a .wav audio clip and EmoWave will detect the emotion in the voice.',
+)
 
-    with gr.Row():
-        with gr.Column():
-            audio_input = gr.Audio(type='filepath', label='🎵 Upload Audio Clip')
-            model_dropdown = gr.Dropdown(
-                choices=['EfficientNet (88.51%)', 'SVM (88.15%)'],
-                value='EfficientNet (88.51%)',
-                label='🤖 Choose Model'
-            )
-            submit_btn = gr.Button('Analyse Emotion 🔍', variant='primary')
-
-        with gr.Column():
-            output_label = gr.Label(num_top_classes=3, label='🎭 Predicted Emotion')
-
-    gr.Markdown("""
-    ---
-    ### 🏆 Model Performance
-    | Model | Accuracy |
-    |---|---|
-    | EfficientNet (Transfer Learning) | 88.51% |
-    | SVM + MFCC Features | 88.15% |
-    | Scratch CNN | 54.00% |
-
-    ### 🎭 Detectable Emotions
-    `neutral` `happy` `sad` `angry` `fearful` `disgusted` `surprised`
-    """)
-
-    submit_btn.click(fn=predict, inputs=[audio_input, model_dropdown], outputs=output_label)
-
-demo.launch()
+demo.launch(share=True)
