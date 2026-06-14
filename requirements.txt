@@ -1,0 +1,8 @@
+gradio
+torch
+torchvision
+librosa
+numpy
+joblib
+soundfile
+scikit-learn
